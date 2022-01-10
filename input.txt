@@ -1,0 +1,12 @@
+# Instructions:
+# The data types used to specify the structure is almost similar to C++
+# Start with a # sign to comment
+# Use M flag to create a new data structure
+# Use F flag to specify field and type separated by space(s)
+# Use E flag to end the creation of the data structure
+
+M Product
+F id            int
+F name          char(30)
+F order_code    int
+E
