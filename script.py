@@ -1,7 +1,7 @@
 import re
 
 
-class DataStructureGenerator:
+class StructureGenerator:
     def __init__(self) -> None:
         self.supportedLangs = self.mapLangs()
         self.input = self.getInputFile()
@@ -111,7 +111,7 @@ class DataStructureGenerator:
 
 def main(args=None):
     try:
-        DataStructureGenerator()
+        StructureGenerator()
     except KeyboardInterrupt as e:
         print("\nExiting...")
         exit()
