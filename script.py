@@ -46,24 +46,28 @@ class StructureGenerator:
             print(e)
 
     def setFileName(self) -> str:
-        return re.split(r'\s+', self.input[0])[1]
+        return input("Enter the output file name (no suffix): ")
+        # return re.split(r'\s+', self.input[0])[1]
 
     def generateOutput(self) -> None:
+        conditions = []
         for lang in self.outputLangs:
-            try:
-                self.supportedLangs[lang]()
-            except KeyError as e:
-                print(f"{lang} is not supported.")
-                print(e)
+            conditions.append(self.supportedLangs[lang]())
+        if all(conditions) is True:
+            print("The operations was successful.")
+        else:
+            print("Errors occured.")
 
-    def generateTs(self) -> None:
+    def generateTs(self) -> bool:
         tsTypes = {
             "int": "number",
             "float": "number",
             "double": "number",
             "string": "string",
             "char": "string",
+            "char[]": "string",
             "wchar_t": "string",
+            "wchar_t[]": "string",
             "bool": "boolean",
             "void": "void"
         }
@@ -76,8 +80,11 @@ class StructureGenerator:
                         f.write(f"export interface {structureName} {'{'}\n")
                     elif line.startswith('F'):
                         _, fieldName, fieldType = re.split(r'\s+', line)
-                        # if fieldType is array, remove (*) and add [] to the end of the type
-                        if re.match(r'\w+\(.*\)', fieldType):
+                        # if fieldType is char({size}) or wchar_t({size}), remove ({size}) and substitute with string
+                        if re.search(r'char\(.*\)|wchar_t\(.*\)', fieldType):
+                            f.write(f"  {fieldName}: {tsTypes['string']};\n")
+                        # if fieldType is array, add [] to the end of the type
+                        elif re.match(r'\w+\(.*\)', fieldType):
                             fieldType = re.sub(r'\(.*\)', '', fieldType)
                             f.write(
                                 f"  {fieldName}: {tsTypes[fieldType]}[];\n")
@@ -86,14 +93,14 @@ class StructureGenerator:
                     elif line.startswith('E'):
                         f.write(f"{'}'}\n")
                     else:
-                        raise ValueError("Unsupported values.")
+                        raise ValueError
+                return True
             except ValueError as e:
                 print(e)
+                return False
 
-    def generateCpp(self) -> None:
+    def generateCpp(self) -> bool:
         with open(f"{self.fileName}.cpp", 'w') as f:
-            f.write("#include <iostream>\n")
-            f.write("\n")
             try:
                 for line in self.input:
                     if line.startswith('M'):
@@ -104,9 +111,12 @@ class StructureGenerator:
                         f.write(f"  {fieldType} {fieldName};\n")
                     elif line.startswith('E'):
                         f.write(f"{'}'} {structureName};\n")
+                    else:
+                        raise ValueError("Unsupported values.")
+                return True
             except ValueError as e:
-                print("Unsupported values.")
                 print(e)
+                return False
 
 
 def main(args=None):
